@@ -1,0 +1,5 @@
+- split up name box
+    make answerCards a component
+    refactor answerbox to make it a component
+    
+
