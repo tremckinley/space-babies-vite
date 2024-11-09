@@ -4,7 +4,8 @@ import { guessNames } from "./assets/guessNames"
 const GameContext = createContext();
 
 function App() {
-  const todaysKid = guessNames[3]
+const todaysKid = guessNames.find(nombre => nombre.name === "Olivia");
+console.log(todaysKid);
   return (
 
     <div className="background">

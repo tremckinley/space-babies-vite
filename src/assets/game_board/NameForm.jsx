@@ -1,24 +1,15 @@
+/* eslint-disable react/prop-types */
 import {useState, useEffect} from 'react';
+import RoundCounter from './RoundCounter';
+import HintBox from './HintBox';
+import * as formServices from '../../services/handleKey'
 
 export default function NameForm(props) {
-  const { kid, submit, onAnswerUpdate } = props;
+  const { kid, onAnswerUpdate } = props;
   const [answerBox, setAnswerBox] = useState([])
+  const [roundNum, setRoundNum] = useState(1);
+  const [gameOver, setGameOver] = useState(false);
   
-  const handleKey = (e) => {
-    if (
-      e.target.value.length > 0 &&
-      e.key != "Backspace" &&
-      e.target.nextElementSibling
-    ) {
-      e.target.nextElementSibling.focus();
-    } else if (
-      e.target.value.length < 1 &&
-      e.key === "Backspace" &&
-      e.target.previousElementSibling
-    ) {
-      e.target.previousElementSibling.focus();
-    }
-  };
 
     const kidNameArray = String(kid.name).split("");
     let initialAnswerBox = []
@@ -33,16 +24,16 @@ export default function NameForm(props) {
       onAnswerUpdate(newArray); 
     };
 
-  const answerBlocks = () =>{
+  const answerBlocks = () => {
     return ( kid.name != undefined ? (
       kidNameArray.map((letter, idx) => {
         return (
           <input
             key={idx}
             type="text"
-            className="w-[3rem] h-[3rem] text-center uppercase rounded-md bg-[#d9d9d9] p-1 m-[2px] border border-black"
+            className="w-[3rem] h-[3rem] text-center uppercase rounded-md bg-[#d9d9d9] p-1 m-[2px] border border-black caret-transparent focus:border-4 focus:border-purple-600"
             maxLength={1}
-            onKeyDown={(e) => handleKey(e)}
+            onKeyDown={formServices.handleKey}
             onFocus={(e) => e.target.select()}
             onChange={(e) => {updateAtIndex(idx, e.target.value)}}           
           ></input>
@@ -54,21 +45,48 @@ export default function NameForm(props) {
       </div>
     )
 )}
+
+const handleNameFormSubmit = (event) => {
+  event.preventDefault();
+  const childAnswer = answerBox.join("")
+  console.log("Submitted Answer: " + childAnswer );
+  if (childAnswer == kid.name) {
+    alert("you win!")
+    setGameOver(true);
+  } else {
+    switch (roundNum) {
+      case 1:
+      case 2:
+      case 3:
+        break;
+
+      default:
+        alert('Nice Try the answer today was ' + kid.name)
+        console.log("you lose.");
+        setGameOver(true);
+    }
+    setRoundNum((prev) => prev + 1);
+  }
+}
+
     useEffect(() => {
       setAnswerBox(initialAnswerBox)
-    
+      
     },[])
 
   
-  return (    
-    <form  className="flex flex-col items-center" 
-      onSubmit={submit}>
-    <div>{answerBlocks()}</div>
-    <div className="pl-[1em] bg-[#D9D9D9] p-2 rounded mt-2 mb-[2rem] text-center tracking-[.5em] uppercase">{answerBox.join('')}</div>
-        {props.children}
-    <button className="w-full bg-black p-2 mt-[2rem] text-sm rounded-lg border-4 border-double border-stone-300 text-slate-200 active:bg-[#2C82AA]">
-        Guess
-    </button>
-    </form>
+  return (
+    <>
+      <RoundCounter roundNum={roundNum} gameOver={gameOver}/>
+      <form  className="flex flex-col items-center" 
+        onSubmit={handleNameFormSubmit}>
+      <div>{answerBlocks()}</div>
+      <div className="pl-[1em] bg-[#D9D9D9] p-2 rounded mt-2 mb-[2rem] text-center tracking-[.5em] uppercase">{answerBox.join('')}</div>
+          <HintBox todaysKid={kid} round={roundNum} />
+      <button className="w-full bg-black p-2 mt-[2rem] text-sm rounded-lg border-4 border-double border-stone-300 text-slate-200 active:bg-[#2C82AA]">
+          Guess
+      </button>
+      </form>
+    </>
   )
 }
